@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crude Realities — Global Oil Price Explorer</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+        <h1>Crude Realities</h1>
+        <p class="subtitle">Global oil benchmark prices, regional spreads & geopolitical events · 2000–2025</p>
+    </div>
+    <div class="header-controls">
+        <div class="toggle-group" id="price-mode-toggle">
+            <button class="toggle-btn active" data-mode="nominal">Nominal</button>
+            <button class="toggle-btn" data-mode="real">Real (2024 USD)</button>
+        </div>
+        <button id="play-btn" title="Animate timeline">&#9654; Play</button>
+    </div>
+</header>
+
+<!-- Series toggle buttons -->
+<div id="series-toggles">
+    <span class="toggle-label">Series:</span>
+</div>
+
+<!-- Main focus chart -->
+<div id="chart-container">
+    <svg id="main-chart"></svg>
+</div>
+
+<!-- Spread chart -->
+<div id="spread-container">
+    <div class="panel-label">WTI − WCS Spread  <span class="panel-sublabel">($ premium US oil commands over Canadian heavy)</span></div>
+    <svg id="spread-chart"></svg>
+</div>
+
+<!-- Context / brush -->
+<div id="context-container">
+    <div class="panel-label">Drag to zoom</div>
+    <svg id="context-chart"></svg>
+</div>
+
+<!-- Tooltip (shared, positioned absolutely) -->
+<div id="tooltip" class="tooltip hidden"></div>
+
+<!-- Event detail panel -->
+<div id="event-panel" class="event-panel hidden">
+    <button id="event-close">✕</button>
+    <div class="event-category" id="event-category"></div>
+    <div class="event-date" id="event-date"></div>
+    <h3 id="event-label"></h3>
+    <p id="event-detail"></p>
+</div>
+
+<!-- Source credit -->
+<footer>
+    Data: U.S. Energy Information Administration (EIA) · Alberta Energy Regulator (AER) ·
+    OPEC · Investing.com (Urals) · IEA / GlobalPetrolPrices · FRED (CPI) &nbsp;|&nbsp;
+    Visualization: D3.js v7
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="js/main.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+/* ── Reset & base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:          #0d1117;
+    --bg-panel:    #161b22;
+    --bg-panel2:   #1c2128;
+    --border:      #30363d;
+    --text-primary:   #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted:     #484f58;
+
+    /* Series colours */
+    --c-wti:   #f0b429;   /* amber  */
+    --c-brent: #58a6ff;   /* blue   */
+    --c-wcs:   #f47067;   /* coral  */
+    --c-urals: #bc8cff;   /* purple */
+    --c-opec:  #3fb950;   /* green  */
+
+    --c-spread-pos: #f47067;   /* red-ish when spread widens (Canada hurts) */
+    --c-spread-neg: #3fb950;
+
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
+    --radius: 6px;
+}
+
+html, body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: 13px;
+    min-height: 100vh;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+h1 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--text-primary);
+}
+
+.subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 3px;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ── Toggle group ─────────────────────────────────────────────────────────── */
+.toggle-group {
+    display: flex;
+    background: var(--bg-panel2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--font);
+    transition: background 0.15s, color 0.15s;
+}
+
+.toggle-btn.active {
+    background: var(--border);
+    color: var(--text-primary);
+}
+
+.toggle-btn:hover:not(.active) {
+    background: var(--bg-panel);
+    color: var(--text-primary);
+}
+
+/* ── Play button ──────────────────────────────────────────────────────────── */
+#play-btn {
+    background: var(--bg-panel2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    padding: 5px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--font);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+#play-btn:hover { border-color: var(--c-wti); background: var(--bg-panel); }
+#play-btn.playing { border-color: var(--c-wti); color: var(--c-wti); }
+
+/* ── Series toggles ──────────────────────────────────────────────────────── */
+#series-toggles {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.toggle-label {
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-right: 4px;
+}
+
+.series-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--bg-panel2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    color: var(--text-secondary);
+    padding: 3px 11px 3px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--font);
+    transition: all 0.15s;
+}
+
+.series-btn .swatch {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    opacity: 0.4;
+    transition: opacity 0.15s;
+}
+
+.series-btn.active .swatch { opacity: 1; }
+.series-btn.active { color: var(--text-primary); }
+.series-btn:hover { border-color: #8b949e; }
+
+/* ── Chart panels ────────────────────────────────────────────────────────── */
+#chart-container,
+#spread-container,
+#context-container {
+    padding: 0 24px;
+    margin-top: 4px;
+}
+
+#spread-container { margin-top: 0; }
+
+.panel-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    padding: 8px 0 2px;
+}
+
+.panel-sublabel {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+#main-chart, #spread-chart, #context-chart {
+    width: 100%;
+    display: block;
+    overflow: visible;
+}
+
+/* ── SVG elements ────────────────────────────────────────────────────────── */
+.axis text { fill: var(--text-secondary); font-size: 11px; }
+.axis path, .axis line { stroke: var(--border); }
+.axis .domain { display: none; }
+.grid line { stroke: var(--border); stroke-opacity: 0.5; stroke-dasharray: 2 3; }
+.grid .domain { display: none; }
+
+.line { fill: none; stroke-width: 1.5; }
+.line.wti   { stroke: var(--c-wti); }
+.line.brent { stroke: var(--c-brent); }
+.line.wcs   { stroke: var(--c-wcs); }
+.line.urals { stroke: var(--c-urals); }
+.line.opec_basket { stroke: var(--c-opec); }
+
+.line.hidden { opacity: 0; pointer-events: none; }
+
+.spread-area { opacity: 0.25; }
+.spread-line { fill: none; stroke-width: 1.5; stroke: var(--c-spread-pos); }
+
+/* crosshair */
+.crosshair { stroke: var(--text-muted); stroke-width: 1; pointer-events: none; }
+
+/* annotation markers */
+.ann-marker {
+    cursor: pointer;
+}
+.ann-marker line {
+    stroke: var(--text-muted);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+}
+.ann-marker circle {
+    fill: var(--bg-panel);
+    stroke: var(--text-secondary);
+    stroke-width: 1.2;
+    transition: stroke 0.15s, r 0.15s;
+}
+.ann-marker:hover circle {
+    stroke: var(--c-wti);
+    r: 5;
+}
+.ann-marker text {
+    fill: var(--text-muted);
+    font-size: 10px;
+    pointer-events: none;
+}
+
+/* context brush */
+.brush .selection {
+    fill: var(--c-wti);
+    fill-opacity: 0.12;
+    stroke: var(--c-wti);
+    stroke-width: 1;
+}
+.brush .handle { fill: var(--c-wti); fill-opacity: 0.5; }
+.brush .overlay { cursor: crosshair; }
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+.tooltip {
+    position: fixed;
+    background: var(--bg-panel2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    pointer-events: none;
+    z-index: 100;
+    min-width: 160px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    transition: opacity 0.1s;
+}
+
+.tooltip.hidden { opacity: 0; }
+
+.tooltip-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
+}
+
+.tooltip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+.tooltip-swatch {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.tooltip-name { color: var(--text-secondary); flex: 1; }
+.tooltip-val  { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+/* ── Event panel ─────────────────────────────────────────────────────────── */
+.event-panel {
+    position: fixed;
+    right: 0; top: 0; bottom: 0;
+    width: 300px;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border);
+    padding: 24px 20px;
+    z-index: 200;
+    transform: translateX(0);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+}
+
+.event-panel.hidden {
+    transform: translateX(320px);
+}
+
+#event-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: none; border: none;
+    color: var(--text-secondary);
+    font-size: 16px; cursor: pointer;
+}
+#event-close:hover { color: var(--text-primary); }
+
+.event-category {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+.event-category.opec         { color: var(--c-opec); }
+.event-category.geopolitical { color: var(--c-brent); }
+.event-category.market       { color: var(--c-wti); }
+.event-category.infrastructure { color: var(--c-wcs); }
+.event-category.demand       { color: var(--c-urals); }
+
+.event-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.event-panel h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    line-height: 1.35;
+}
+
+.event-panel p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+footer {
+    padding: 12px 24px;
+    font-size: 11px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+}
