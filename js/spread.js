@@ -1,10 +1,25 @@
-// spread.js — WTI−WCS spread area chart (linked x-axis)
-import { MARGIN, brushExtent } from './main.js';
+// spread.js — WTI−WCS spread area chart (linked x-axis + shared hover)
+import { MARGIN, brushExtent, setHoverDate } from './main.js';
 
 const SPREAD_H = 110;
 let svg, spreadG, xScale, yScale, width;
+let _data = null;
+
+// Called by chart.js mousemove to draw crosshair here (Gap 2)
+export function drawSharedCrosshair(date) {
+    if (!spreadG || !xScale) return;
+    const height = SPREAD_H - MARGIN.top - MARGIN.bottom;
+    const [x0, x1] = xScale.domain();
+    if (date < x0 || date > x1) { spreadG.select('.sh-cross').attr('opacity', 0); return; }
+    spreadG.select('.sh-cross')
+        .attr('opacity', 0.4).attr('x1', xScale(date)).attr('x2', xScale(date));
+}
+export function clearSharedCrosshair() {
+    if (spreadG) spreadG.select('.sh-cross').attr('opacity', 0);
+}
 
 export function initSpread(data) {
+    _data = data;
     const container = document.getElementById('spread-container');
     const totalW = container.clientWidth;
     width  = totalW - MARGIN.left - MARGIN.right;
@@ -26,12 +41,10 @@ export function initSpread(data) {
 
     yScale = d3.scaleLinear().range([height, 0]);
 
-    spreadG.append('g').attr('class', 'axis axis-x')
-        .attr('transform', `translate(0,${height})`);
+    spreadG.append('g').attr('class', 'axis axis-x').attr('transform', `translate(0,${height})`);
     spreadG.append('g').attr('class', 'axis axis-y');
     spreadG.append('g').attr('class', 'grid grid-y');
 
-    // Zero line
     spreadG.append('line').attr('class', 'zero-line')
         .attr('x1', 0).attr('x2', width)
         .attr('stroke', '#30363d').attr('stroke-width', 1);
@@ -40,10 +53,36 @@ export function initSpread(data) {
         .attr('class', 'spread-area-group')
         .attr('clip-path', 'url(#spread-clip)');
 
-    // Two area paths: positive (spread widens, bad for Canada) and negative
     areaG.append('path').attr('class', 'spread-area-pos');
     areaG.append('path').attr('class', 'spread-area-neg');
     areaG.append('path').attr('class', 'spread-line-path');
+
+    // Shared crosshair line for Gap 2
+    spreadG.append('line').attr('class', 'sh-cross')
+        .attr('opacity', 0).attr('y1', 0).attr('y2', height)
+        .attr('stroke', '#8b949e').attr('stroke-width', 1);
+
+    // Spread chart also drives shared hover back to main chart
+    spreadG.append('rect')
+        .attr('width', width).attr('height', height)
+        .attr('fill', 'transparent')
+        .on('mousemove', function(event) {
+            const [mx] = d3.pointer(event);
+            const hovDate = xScale.invert(mx);
+            const bisect = d3.bisector(d => d.month).left;
+            const i = bisect(data, hovDate, 1);
+            const d0 = data[i-1], d1 = data[i];
+            if (!d0) return;
+            const row = !d1 || hovDate - d0.month < d1.month - hovDate ? d0 : d1;
+            setHoverDate(row.month);
+            drawSharedCrosshair(row.month);
+            import('./chart.js').then(m => m.drawSharedCrosshair(row.month));
+        })
+        .on('mouseleave', function() {
+            clearSharedCrosshair();
+            setHoverDate(null);
+            import('./chart.js').then(m => m.clearSharedCrosshair());
+        });
 
     updateSpread(data);
 }

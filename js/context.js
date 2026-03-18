@@ -4,6 +4,17 @@ import { SERIES, MARGIN } from './main.js';
 const CTX_H = 64;
 let svg, ctxG, xScale, yScale, brush, width;
 
+// Programmatically move the brush (called by chapter buttons and play animation)
+export function moveContextBrush(extent) {
+    if (!ctxG || !brush) return;
+    const brushG = ctxG.select('.brush');
+    if (!extent) {
+        brushG.call(brush.move, null);
+    } else {
+        brushG.call(brush.move, extent.map(xScale));
+    }
+}
+
 export function initContext(data, onBrush) {
     const container = document.getElementById('context-container');
     const totalW = container.clientWidth;

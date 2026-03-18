@@ -3,7 +3,48 @@
 
 import { initChart, updateChart } from './chart.js';
 import { initSpread, updateSpread } from './spread.js';
-import { initContext } from './context.js';
+import { initContext, moveContextBrush } from './context.js';
+
+// ── Story chapters ─────────────────────────────────────────────────────────────
+// Each chapter zooms to a date range, optionally forces a series set visible,
+// and pre-opens a named event annotation by label match.
+const CHAPTERS = [
+    {
+        id: 'overview',
+        label: 'Overview',
+        range: ['2000-01-01', '2025-12-01'],
+        series: ['wti', 'brent', 'wcs', 'urals'],
+        highlight: null,
+    },
+    {
+        id: 'crash2008',
+        label: '2008 Crash',
+        range: ['2007-01-01', '2009-06-01'],
+        series: ['wti', 'brent', 'wcs'],
+        highlight: 'All-time high $147',
+    },
+    {
+        id: 'shaleglut',
+        label: 'Shale Glut',
+        range: ['2014-01-01', '2017-06-01'],
+        series: ['wti', 'brent', 'opec_basket'],
+        highlight: 'OPEC refuses to cut',
+    },
+    {
+        id: 'canadacrisis',
+        label: 'Canada Crisis',
+        range: ['2017-01-01', '2020-01-01'],
+        series: ['wti', 'wcs'],
+        highlight: 'WCS hits record $50 discount',
+    },
+    {
+        id: 'covid',
+        label: 'COVID & War',
+        range: ['2019-10-01', '2023-01-01'],
+        series: ['wti', 'brent', 'urals'],
+        highlight: 'WTI goes negative: -$37',
+    },
+];
 
 // ── Series config ─────────────────────────────────────────────────────────────
 // Add / remove entries here to change what appears in the viz.
@@ -23,11 +64,16 @@ export const MARGIN = { top: 18, right: 24, bottom: 22, left: 52 };
 
 // ── Price mode: 'nominal' | 'real' ───────────────────────────────────────────
 export let priceMode = 'nominal';
+export function setPriceMode(m) { priceMode = m; }
 
 // ── State shared by context brush → chart ─────────────────────────────────────
 // brushExtent holds the current [Date, Date] zoom window; null = full range
 export let brushExtent = null;
 export function setBrushExtent(ext) { brushExtent = ext; }
+
+// ── Shared hover date — so both charts light up the same date ─────────────────
+export let hoverDate = null;
+export function setHoverDate(d) { hoverDate = d; }
 
 // ── Load data ─────────────────────────────────────────────────────────────────
 async function load() {
@@ -89,34 +135,81 @@ function buildToggles(onToggle) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 (async () => {
     const { data, events } = await load();
+    const parseMonth = d3.timeParse('%Y-%m-%d');
 
-    // Initialise all chart modules (they each grab their SVG element and size)
+    // Helper: redraw everything
+    function redrawAll() {
+        updateChart(data, events);
+        updateSpread(data);
+    }
+
+    // Initialise all chart modules
     initChart(data, events);
     initSpread(data);
     initContext(data, (ext) => {
         setBrushExtent(ext);
-        updateChart(data, events);
-        updateSpread(data);
+        redrawAll();
     });
 
     // Series toggle buttons
-    buildToggles(() => {
-        updateChart(data, events);
-        updateSpread(data);
-    });
+    buildToggles(redrawAll);
 
     // Nominal / Real toggle
     document.querySelectorAll('.toggle-btn[data-mode]').forEach(btn => {
         btn.addEventListener('click', () => {
-            priceMode = btn.dataset.mode;
+            setPriceMode(btn.dataset.mode);
             document.querySelectorAll('.toggle-btn[data-mode]').forEach(b =>
                 b.classList.toggle('active', b === btn)
             );
-            updateChart(data, events);
+            redrawAll();
         });
     });
 
-    // Play button — animates the timeline from start to brushed end
+    // ── Story chapter buttons ─────────────────────────────────────────────────
+    const chapContainer = document.getElementById('chapter-btns');
+    CHAPTERS.forEach(ch => {
+        const btn = document.createElement('button');
+        btn.className = 'chapter-btn' + (ch.id === 'overview' ? ' active' : '');
+        btn.textContent = ch.label;
+        btn.addEventListener('click', () => {
+            // Update active state
+            chapContainer.querySelectorAll('.chapter-btn')
+                .forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Set visible series
+            visible.clear();
+            ch.series.forEach(k => visible.add(k));
+            // Sync toggle buttons
+            document.querySelectorAll('.series-btn').forEach(b => {
+                b.classList.toggle('active', visible.has(b.dataset.key));
+            });
+
+            // Set brush extent
+            const ext = ch.range
+                ? [parseMonth(ch.range[0]), parseMonth(ch.range[1])]
+                : null;
+            setBrushExtent(ext);
+            moveContextBrush(ext);
+
+            redrawAll();
+
+            // Pre-open event panel for the highlight event
+            if (ch.highlight) {
+                const ev = events.find(e => e.label === ch.highlight);
+                if (ev) {
+                    // small delay so chart redraws first
+                    setTimeout(() => {
+                        document.getElementById('event-panel')
+                            .dispatchEvent(new CustomEvent('open-event', { detail: ev }));
+                    }, 350);
+                }
+            }
+        });
+        chapContainer.appendChild(btn);
+    });
+
+    // ── Play button ───────────────────────────────────────────────────────────
     const playBtn = document.getElementById('play-btn');
     let playing = false;
     let playTimer = null;
@@ -125,7 +218,7 @@ function buildToggles(onToggle) {
         if (playing) {
             playing = false;
             clearInterval(playTimer);
-            playBtn.textContent = '▶ Play';
+            playBtn.innerHTML = '&#9654; Play';
             playBtn.classList.remove('playing');
             return;
         }
@@ -133,35 +226,38 @@ function buildToggles(onToggle) {
         playBtn.textContent = '⏸ Pause';
         playBtn.classList.add('playing');
 
+        // Reset to full range first
+        setBrushExtent(null);
+        moveContextBrush(null);
+
         const startDate = data[0].month;
         const endDate   = data[data.length - 1].month;
         const totalMs   = endDate - startDate;
-        const stepMs    = totalMs / 120;   // ~120 frames across full range
+        const stepMs    = totalMs / 140;
 
-        let current = startDate;
+        let current = new Date(startDate);
         playTimer = setInterval(() => {
             current = new Date(+current + stepMs);
             if (current >= endDate) {
                 current = endDate;
                 clearInterval(playTimer);
                 playing = false;
-                playBtn.textContent = '▶ Play';
+                playBtn.innerHTML = '&#9654; Play';
                 playBtn.classList.remove('playing');
             }
             setBrushExtent([startDate, current]);
-            updateChart(data, events);
-            updateSpread(data);
+            moveContextBrush([startDate, current]);
+            redrawAll();
         }, 40);
     });
 
-    // Window resize — redraw everything
+    // Window resize — reinitialise
     window.addEventListener('resize', () => {
         initChart(data, events);
         initSpread(data);
         initContext(data, (ext) => {
             setBrushExtent(ext);
-            updateChart(data, events);
-            updateSpread(data);
+            redrawAll();
         });
     });
 })();
