@@ -8,52 +8,159 @@
 </head>
 <body>
 
+<!-- ── Sticky header ──────────────────────────────────────────────────── -->
 <header>
     <div class="header-left">
         <h1>Crude Realities</h1>
-        <p class="subtitle">Global oil benchmark prices, regional spreads & geopolitical events · 2000–2025</p>
+        <p class="subtitle">Global oil benchmark prices, spreads &amp; geopolitics · 2000–2025</p>
     </div>
-    <div class="header-controls">
-        <div class="toggle-group" id="price-mode-toggle">
-            <button class="toggle-btn active" data-mode="nominal">Nominal</button>
-            <button class="toggle-btn" data-mode="real">Real (2024 USD)</button>
-        </div>
-        <button id="play-btn" title="Animate timeline">&#9654; Play</button>
-    </div>
+    <nav id="section-nav">
+        <button class="nav-dot active" data-section="benchmarks" title="Benchmarks">①</button>
+        <button class="nav-dot" data-section="map"         title="World Map">②</button>
+        <button class="nav-dot" data-section="heatmap"     title="Volatility">③</button>
+        <button class="nav-dot" data-section="scatter"     title="Paper vs Physical">④</button>
+        <button class="nav-dot" data-section="race"        title="Bar Race">⑤</button>
+    </nav>
 </header>
 
-<!-- Series toggle buttons -->
-<div id="series-toggles">
-    <span class="toggle-label">Series:</span>
-</div>
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 1 — Benchmarks (existing viz)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="section-benchmarks" data-section="benchmarks">
 
-<!-- Story chapter buttons (Gap 1) -->
-<div id="chapter-row">
-    <span class="toggle-label">Story:</span>
-    <div id="chapter-btns"></div>
-</div>
+    <div class="section-narrative">
+        <div class="narrative">
+            <h2>The benchmarks</h2>
+            <p>WTI, Brent, WCS and Urals are the four reference prices that set the value of nearly
+                all crude oil traded globally — yet they diverge dramatically during crises.
+                Use the story chapters below to explore each era, or brush the timeline to zoom in.</p>
+        </div>
+    </div>
 
-<!-- Main focus chart -->
-<div id="chart-container">
-    <svg id="main-chart"></svg>
-</div>
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <div id="series-toggles"><span class="toggle-label">Series:</span></div>
+            <div id="chapter-row">
+                <span class="toggle-label">Story:</span>
+                <div id="chapter-btns"></div>
+            </div>
+        </div>
+        <div class="toolbar-right">
+            <div class="toggle-group" id="price-mode-toggle">
+                <button class="toggle-btn active" data-mode="nominal">Nominal</button>
+                <button class="toggle-btn" data-mode="real">Real (2024 USD)</button>
+            </div>
+            <button id="play-btn" title="Animate timeline">&#9654; Play</button>
+        </div>
+    </div>
 
-<!-- Spread chart -->
-<div id="spread-container">
-    <div class="panel-label">WTI − WCS Spread  <span class="panel-sublabel">($ premium US oil commands over Canadian heavy)</span></div>
-    <svg id="spread-chart"></svg>
-</div>
+    <div id="chart-container"><svg id="main-chart"></svg></div>
 
-<!-- Context / brush -->
-<div id="context-container">
-    <div class="panel-label">Drag to zoom</div>
-    <svg id="context-chart"></svg>
-</div>
+    <div id="spread-container">
+        <div class="panel-label">WTI − WCS Spread
+            <span class="panel-sublabel">($ premium US oil commands over Canadian heavy)</span>
+        </div>
+        <svg id="spread-chart"></svg>
+    </div>
 
-<!-- Tooltip (shared, positioned absolutely) -->
+    <div id="context-container">
+        <div class="panel-label">Drag to zoom</div>
+        <svg id="context-chart"></svg>
+    </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 2 — World Map
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="section-map" data-section="map" class="viz-section">
+
+    <div class="section-narrative">
+        <div class="narrative">
+            <h2>Same barrel, different price at the pump</h2>
+            <p>While benchmarks set the global price of crude, what consumers pay at the pump varies
+                wildly by country — shaped by taxes, subsidies, refining capacity, and government policy.
+                Drag the year slider to see how pump prices (ex-tax) evolved across six major economies.</p>
+        </div>
+    </div>
+
+    <svg id="map-chart"></svg>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 3 — Heatmap
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="section-heatmap" data-section="heatmap" class="viz-section">
+
+    <div class="section-narrative">
+        <div class="narrative">
+            <h2>Volatility clusters in crisis years</h2>
+            <p>Monthly returns reveal that oil prices are calm for years, then violently disruptive.
+                2008, 2014–16, and 2020 stand out as exceptional. Each cell is one month — hover for the
+                exact return. Switch series to compare how different benchmarks weathered each storm.</p>
+        </div>
+    </div>
+
+    <div id="heatmap-selector">
+        <span class="toggle-label">Series:</span>
+        <div id="heatmap-btns"></div>
+    </div>
+
+    <div id="heatmap-container">
+        <svg id="heatmap-chart"></svg>
+    </div>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 4 — Scatter: paper vs physical
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="section-scatter" data-section="scatter" class="viz-section">
+
+    <div class="section-narrative">
+        <div class="narrative">
+            <h2>How much of a WTI crash reaches your tank?</h2>
+            <p>The scatter plots WTI futures price against retail pump prices across six countries.
+                Use the <strong>lag slider</strong> to explore how many months it takes for a crude price
+                move to pass through to consumers — the relationship tightens around 1–2 months for most
+                countries, but the slope differs dramatically.</p>
+        </div>
+    </div>
+
+    <div id="scatter-container">
+        <svg id="scatter-chart"></svg>
+    </div>
+    <div id="scatter-lag" style="padding:8px 0 0 60px"></div>
+
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 5 — Bar chart race
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="section-race" data-section="race" class="viz-section">
+
+    <div class="section-narrative">
+        <div class="narrative">
+            <h2>The race: who leads the decade?</h2>
+            <p>Watch benchmark prices race through 25 years of monthly data. Notice how WCS (Canadian
+                heavy) consistently lags behind — and how Urals briefly surged post-Ukraine before
+                sanctions drove it into opacity. Hit Play and watch the $147 spike and COVID crash unfold
+                in real time.</p>
+        </div>
+    </div>
+
+    <div id="race-container">
+        <svg id="race-chart"></svg>
+    </div>
+    <div id="race-controls" style="display:flex;align-items:center;gap:8px;padding:8px 24px;flex-wrap:wrap"></div>
+
+</section>
+
+<!-- ── Shared tooltip ───────────────────────────────────────────────── -->
 <div id="tooltip" class="tooltip hidden"></div>
 
-<!-- Event detail panel -->
+<!-- ── Event detail panel ──────────────────────────────────────────── -->
 <div id="event-panel" class="event-panel hidden">
     <button id="event-close">✕</button>
     <div class="event-category" id="event-category"></div>
@@ -62,7 +169,7 @@
     <p id="event-detail"></p>
 </div>
 
-<!-- Source credit -->
+<!-- ── Footer ───────────────────────────────────────────────────────── -->
 <footer>
     Data: U.S. Energy Information Administration (EIA) · Alberta Energy Regulator (AER) ·
     OPEC · Investing.com (Urals) · IEA / GlobalPetrolPrices · FRED (CPI) &nbsp;|&nbsp;
@@ -70,6 +177,8 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 <script src="js/main.js" type="module"></script>
+
 </body>
 </html>

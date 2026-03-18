@@ -4,6 +4,11 @@
 import { initChart, updateChart } from './chart.js';
 import { initSpread, updateSpread } from './spread.js';
 import { initContext, moveContextBrush } from './context.js';
+import { initMap } from './map.js';
+import { initHeatmap } from './heatmap.js';
+import { initScatter } from './scatter.js';
+import { initRace } from './race.js';
+import { initScroll } from './scroll.js';
 
 // ── Story chapters ─────────────────────────────────────────────────────────────
 // Each chapter zooms to a date range, optionally forces a series set visible,
@@ -259,5 +264,18 @@ function buildToggles(onToggle) {
             setBrushExtent(ext);
             redrawAll();
         });
+    });
+
+    // ── Scrollytelling — init each section when it enters view ────────────────
+    initScroll({
+        benchmarks: () => {
+            // already initialised above; just re-trigger draw-on-load animation
+            // by resetting isFirstDraw via re-init
+            initChart(data, events);
+        },
+        map:     () => initMap(data),
+        heatmap: () => initHeatmap(data),
+        scatter: () => initScatter(data),
+        race:    () => initRace(data),
     });
 })();

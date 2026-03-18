@@ -384,3 +384,106 @@ footer {
     border-top: 1px solid var(--border);
     margin-top: 8px;
 }
+
+/* ── Section nav dots ────────────────────────────────────────────────────── */
+#section-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-panel2);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+}
+.nav-dot:hover { border-color: var(--c-wti); color: var(--text-primary); }
+.nav-dot.active { background: var(--border); color: var(--text-primary); border-color: var(--c-wti); }
+
+/* ── Toolbar ─────────────────────────────────────────────────────────────── */
+.toolbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 24px;
+    border-bottom: 1px solid var(--border);
+}
+.toolbar-left  { display: flex; flex-direction: column; gap: 4px; }
+.toolbar-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+/* ── Scrollytelling sections ─────────────────────────────────────────────── */
+section {
+    padding-bottom: 60px;
+    border-bottom: 1px solid var(--border);
+}
+
+.viz-section {
+    padding: 0 0 60px;
+}
+
+.section-narrative {
+    max-width: 680px;
+    padding: 40px 24px 20px;
+}
+
+.narrative {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.narrative.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.section-narrative h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    letter-spacing: -0.2px;
+}
+.section-narrative p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* ── Heatmap selector ────────────────────────────────────────────────────── */
+#heatmap-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 24px 10px;
+}
+
+/* ── Map, scatter, race containers ──────────────────────────────────────── */
+#map-chart, #heatmap-chart, #scatter-chart, #race-chart {
+    display: block;
+    width: 100%;
+    overflow: visible;
+}
+
+#map-chart     { padding: 0 24px; }
+#heatmap-chart { padding: 0 24px; }
+
+#scatter-container,
+#race-container {
+    padding: 0 24px;
+}
+
+/* ── Slider handle shared style ──────────────────────────────────────────── */
+.slider-handle { transition: cx 0.1s; }
+
+input[type=range] {
+    accent-color: var(--c-wti);
+    cursor: pointer;
+}
